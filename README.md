@@ -73,17 +73,17 @@ Sections and fields can be accessed using the index operator ```[]```.
 The values can be converted to various native types:
 
 ```cpp
-bool myBool = myIni["Foo"]["myBool"].as<bool>();
-char myChar = myIni["Foo"]["myChar"].as<char>();
-unsigned char myUChar = myIni["Foo"]["myUChar"].as<unsigned char>();
-int myInt = myIni["Foo"]["myInt"].as<int>();
-unsigned int myUInt = myIni["Foo"]["myUInt"].as<unsigned int>();
-long myLong = myIni["Foo"]["myLong"].as<long>();
-unsigned long myULong = myIni["Foo"]["myULong"].as<unsigned long>();
-float myFloat = myIni["Foo"]["myFloat"].as<float>();
-double myDouble = myIni["Foo"]["myDouble"].as<double>();
-std::string myStr = myIni["Foo"]["myStr"].as<std::string>();
-const char *myStr2 = myIni["Foo"]["myStr"].as<const char*>();
+bool myBool = myIni["Foo"]["myBool"].as<bool>(false);
+char myChar = myIni["Foo"]["myChar"].as<char>('0');
+unsigned char myUChar = myIni["Foo"]["myUChar"].as<unsigned char>('0');
+int myInt = myIni["Foo"]["myInt"].as<int>(0);
+unsigned int myUInt = myIni["Foo"]["myUInt"].as<unsigned int>(0);
+long myLong = myIni["Foo"]["myLong"].as<long>(0);
+unsigned long myULong = myIni["Foo"]["myULong"].as<unsigned long>(0);
+float myFloat = myIni["Foo"]["myFloat"].as<float>(0.0f);
+double myDouble = myIni["Foo"]["myDouble"].as<double>(0.0);
+std::string myStr = myIni["Foo"]["myStr"].as<std::string>("null");
+const char *myStr2 = myIni["Foo"]["myStr"].as<const char*>("null");
 ```
 
 Natively supported types are:
@@ -156,8 +156,13 @@ namespace ini
     struct Convert<std::vector<T>>
     {
         /** Decodes a std::vector from a string. */
-        void decode(const std::string &value, std::vector<T> &result)
+        void decode(const std::string &value, std::vector<T> &result, const std::vector<T> &default_value)
         {
+            if (value.empty) {
+                result = default_value;
+                return;
+            }
+        
             result.clear();
 
             // variable to store the decoded value of each element
@@ -167,7 +172,7 @@ namespace ini
             size_t endPos = 0;
             size_t cnt;
 
-            while(endPos != std::string::npos)
+            for (size_t i = 0; endPos != std::string::npos; i++)
             {
                 if(endPos != 0)
                     startPos = endPos + 1;
@@ -186,9 +191,8 @@ namespace ini
                 // the vector, so the vector can use any type that
                 // is compatible with inifile-cpp
                 Convert<T> conv;
-                conv.decode(tmp, decoded);
+                conv.decode(tmp, decoded, i < default_value.size() ? default_value.at(i) : T());
                 result.push_back(decoded);
-
             }
         }
 

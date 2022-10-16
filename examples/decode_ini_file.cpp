@@ -27,7 +27,7 @@ int main()
         {
             const std::string &fieldName = fieldPair.first;
             const ini::IniField &field = fieldPair.second;
-            std::cout << "  Field '" << fieldName << "' Value '" << field.as<std::string>() << "'" << std::endl;
+            std::cout << "  Field '" << fieldName << "' Value '" << field.as<std::string>("null") << "'" << std::endl;
         }
     }
 

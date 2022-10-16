@@ -17,7 +17,7 @@ TEST_CASE("parse ini file", "IniFile")
     ini::IniFile inif(ss);
 
     REQUIRE(inif.size() == 2);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "hello world");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("goodbye world") == "hello world");
     REQUIRE(inif["Test"].size() == 0);
 }
 
@@ -54,7 +54,7 @@ TEST_CASE("parse empty field", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "");
 }
 
 TEST_CASE("parse section with duplicate field", "IniFile")
@@ -64,7 +64,7 @@ TEST_CASE("parse section with duplicate field", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "world");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("hello") == "world");
 }
 
 TEST_CASE("parse field as bool", "IniFile")
@@ -74,9 +74,9 @@ TEST_CASE("parse field as bool", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 3);
-    REQUIRE(inif["Foo"]["bar1"].as<bool>());
-    REQUIRE_FALSE(inif["Foo"]["bar2"].as<bool>());
-    REQUIRE(inif["Foo"]["bar3"].as<bool>());
+    REQUIRE(inif["Foo"]["bar1"].as<bool>(false));
+    REQUIRE_FALSE(inif["Foo"]["bar2"].as<bool>(true));
+    REQUIRE(inif["Foo"]["bar3"].as<bool>(false));
 }
 
 TEST_CASE("parse field as char", "IniFile")
@@ -86,8 +86,8 @@ TEST_CASE("parse field as char", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<char>() == 'c');
-    REQUIRE(inif["Foo"]["bar2"].as<char>() == 'q');
+    REQUIRE(inif["Foo"]["bar1"].as<char>('a') == 'c');
+    REQUIRE(inif["Foo"]["bar2"].as<char>('b') == 'q');
 }
 
 TEST_CASE("parse field as unsigned char", "IniFile")
@@ -97,8 +97,8 @@ TEST_CASE("parse field as unsigned char", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<unsigned char>() == 'c');
-    REQUIRE(inif["Foo"]["bar2"].as<unsigned char>() == 'q');
+    REQUIRE(inif["Foo"]["bar1"].as<unsigned char>('a') == 'c');
+    REQUIRE(inif["Foo"]["bar2"].as<unsigned char>('b') == 'q');
 }
 
 TEST_CASE("parse field as short", "IniFile")
@@ -108,8 +108,8 @@ TEST_CASE("parse field as short", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<short>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<short>() == -2);
+    REQUIRE(inif["Foo"]["bar1"].as<short>(-1) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<short>(2) == -2);
 }
 
 TEST_CASE("parse field as unsigned short", "IniFile")
@@ -119,8 +119,8 @@ TEST_CASE("parse field as unsigned short", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<unsigned short>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<unsigned short>() == 13);
+    REQUIRE(inif["Foo"]["bar1"].as<unsigned short>(10) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<unsigned short>(3) == 13);
 }
 
 TEST_CASE("parse field as int", "IniFile")
@@ -130,8 +130,8 @@ TEST_CASE("parse field as int", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<int>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<int>() == -2);
+    REQUIRE(inif["Foo"]["bar1"].as<int>(0) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<int>(1) == -2);
 }
 
 TEST_CASE("parse field as unsigned int", "IniFile")
@@ -141,8 +141,8 @@ TEST_CASE("parse field as unsigned int", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<unsigned int>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<unsigned int>() == 13);
+    REQUIRE(inif["Foo"]["bar1"].as<unsigned int>(3) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<unsigned int>(6) == 13);
 }
 
 TEST_CASE("parse field as long", "IniFile")
@@ -152,8 +152,8 @@ TEST_CASE("parse field as long", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<long>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<long>() == -2);
+    REQUIRE(inif["Foo"]["bar1"].as<long>(77) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<long>(500) == -2);
 }
 
 TEST_CASE("parse field as unsigned long", "IniFile")
@@ -163,8 +163,8 @@ TEST_CASE("parse field as unsigned long", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<unsigned long>() == 1);
-    REQUIRE(inif["Foo"]["bar2"].as<unsigned long>() == 13);
+    REQUIRE(inif["Foo"]["bar1"].as<unsigned long>(14) == 1);
+    REQUIRE(inif["Foo"]["bar2"].as<unsigned long>(59) == 13);
 }
 
 TEST_CASE("parse field as double", "IniFile")
@@ -174,9 +174,9 @@ TEST_CASE("parse field as double", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 3);
-    REQUIRE(inif["Foo"]["bar1"].as<double>() == Approx(1.2).margin(1e-3));
-    REQUIRE(inif["Foo"]["bar2"].as<double>() == Approx(1.0).margin(1e-3));
-    REQUIRE(inif["Foo"]["bar3"].as<double>() == Approx(-2.4).margin(1e-3));
+    REQUIRE(inif["Foo"]["bar1"].as<double>(1.) == Approx(1.2).margin(1e-3));
+    REQUIRE(inif["Foo"]["bar2"].as<double>(1.) == Approx(1.0).margin(1e-3));
+    REQUIRE(inif["Foo"]["bar3"].as<double>(1.) == Approx(-2.4).margin(1e-3));
 }
 
 TEST_CASE("parse field as float", "IniFile")
@@ -186,9 +186,9 @@ TEST_CASE("parse field as float", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 3);
-    REQUIRE(inif["Foo"]["bar1"].as<float>() == Approx(1.2f).margin(1e-3f));
-    REQUIRE(inif["Foo"]["bar2"].as<float>() == Approx(1.0f).margin(1e-3f));
-    REQUIRE(inif["Foo"]["bar3"].as<float>() == Approx(-2.4f).margin(1e-3f));
+    REQUIRE(inif["Foo"]["bar1"].as<float>(1.f) == Approx(1.2f).margin(1e-3f));
+    REQUIRE(inif["Foo"]["bar2"].as<float>(1.f) == Approx(1.0f).margin(1e-3f));
+    REQUIRE(inif["Foo"]["bar3"].as<float>(1.f) == Approx(-2.4f).margin(1e-3f));
 }
 
 TEST_CASE("parse field as std::string", "IniFile")
@@ -198,8 +198,8 @@ TEST_CASE("parse field as std::string", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(inif["Foo"]["bar1"].as<std::string>() == "hello");
-    REQUIRE(inif["Foo"]["bar2"].as<std::string>() == "world");
+    REQUIRE(inif["Foo"]["bar1"].as<std::string>("") == "hello");
+    REQUIRE(inif["Foo"]["bar2"].as<std::string>("") == "world");
 }
 
 TEST_CASE("parse field as const char*", "IniFile")
@@ -209,8 +209,8 @@ TEST_CASE("parse field as const char*", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 2);
-    REQUIRE(std::strcmp(inif["Foo"]["bar1"].as<const char*>(), "hello") == 0);
-    REQUIRE(std::strcmp(inif["Foo"]["bar2"].as<const char*>(), "world") == 0);
+    REQUIRE(std::strcmp(inif["Foo"]["bar1"].as<const char*>(""), "hello") == 0);
+    REQUIRE(std::strcmp(inif["Foo"]["bar2"].as<const char*>(""), "world") == 0);
 }
 
 TEST_CASE("parse field with custom field sep", "IniFile")
@@ -223,9 +223,9 @@ TEST_CASE("parse field with custom field sep", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 3);
-    REQUIRE(inif["Foo"]["bar1"].as<bool>());
-    REQUIRE_FALSE(inif["Foo"]["bar2"].as<bool>());
-    REQUIRE(inif["Foo"]["bar3"].as<bool>());
+    REQUIRE(inif["Foo"]["bar1"].as<bool>(false));
+    REQUIRE_FALSE(inif["Foo"]["bar2"].as<bool>(false));
+    REQUIRE(inif["Foo"]["bar3"].as<bool>(false));
 }
 
 TEST_CASE("parse with comment", "IniFile")
@@ -235,7 +235,7 @@ TEST_CASE("parse with comment", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("parse with custom comment char prefix", "IniFile")
@@ -249,7 +249,7 @@ TEST_CASE("parse with custom comment char prefix", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("parse with multi char comment prefix", "IniFile")
@@ -259,7 +259,7 @@ TEST_CASE("parse with multi char comment prefix", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("parse with multiple multi char comment prefixes", "IniFile")
@@ -273,7 +273,7 @@ TEST_CASE("parse with multiple multi char comment prefixes", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("comment prefixes can be set after construction", "IniFile")
@@ -289,7 +289,7 @@ TEST_CASE("comment prefixes can be set after construction", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("comments are allowed after escaped comments", "IniFile")
@@ -299,8 +299,8 @@ TEST_CASE("comments are allowed after escaped comments", "IniFile")
                           "more=of this \\# \\#\n");
     ini::IniFile inif(ss);
 
-    REQUIRE(inif["Foo"]["hello"].as<std::string>() == "world #");
-    REQUIRE(inif["Foo"]["more"].as<std::string>() == "of this # #");
+    REQUIRE(inif["Foo"]["hello"].as<std::string>("") == "world #");
+    REQUIRE(inif["Foo"]["more"].as<std::string>("") == "of this # #");
 }
 
 TEST_CASE(
@@ -312,9 +312,9 @@ TEST_CASE(
                           "weird2=but \\#### this is a comment");
     ini::IniFile inif(ss, '=', {"##"});
 
-    REQUIRE(inif["Foo"]["weird1"].as<std::string>() ==
+    REQUIRE(inif["Foo"]["weird1"].as<std::string>("") ==
             "note ### this is not a comment");
-    REQUIRE(inif["Foo"]["weird2"].as<std::string>() == "but ##");
+    REQUIRE(inif["Foo"]["weird2"].as<std::string>("") == "but ##");
 }
 
 TEST_CASE("escape comment when writing", "IniFile")
@@ -350,8 +350,8 @@ TEST_CASE("decode what we encoded", "IniFile")
     REQUIRE(inif["Fo#o"].size() == 2);
     REQUIRE(inif["Fo#o"].find("heREMllo") != inif["Fo#o"].end());
     REQUIRE(inif["Fo#o"].find("world") != inif["Fo#o"].end());
-    REQUIRE(inif["Fo#o"]["heREMllo"].as<std::string>() == "worlREMd");
-    REQUIRE(inif["Fo#o"]["world"].as<std::string>() == "he//llo");
+    REQUIRE(inif["Fo#o"]["heREMllo"].as<std::string>("") == "worlREMd");
+    REQUIRE(inif["Fo#o"]["world"].as<std::string>("") == "he//llo");
 
     auto actual = inif.encode();
 
@@ -364,8 +364,8 @@ TEST_CASE("decode what we encoded", "IniFile")
     REQUIRE(inif["Fo#o"].size() == 2);
     REQUIRE(inif["Fo#o"].find("heREMllo") != inif["Fo#o"].end());
     REQUIRE(inif["Fo#o"].find("world") != inif["Fo#o"].end());
-    REQUIRE(inif["Fo#o"]["heREMllo"].as<std::string>() == "worlREMd");
-    REQUIRE(inif["Fo#o"]["world"].as<std::string>() == "he//llo");
+    REQUIRE(inif["Fo#o"]["heREMllo"].as<std::string>("") == "worlREMd");
+    REQUIRE(inif["Fo#o"]["world"].as<std::string>("") == "he//llo");
 
 
     auto actual2 = inif.encode();
@@ -550,7 +550,7 @@ TEST_CASE("inline comments in fields are discarded", "IniFile")
                           "bar=Hello #world!");
     ini::IniFile inif(ss);
 
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "Hello");
 }
 
 TEST_CASE("inline comments can be escaped", "IniFile")
@@ -559,7 +559,7 @@ TEST_CASE("inline comments can be escaped", "IniFile")
                           "bar=Hello \\#world!");
     ini::IniFile inif(ss);
 
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello #world!");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "Hello #world!");
 }
 
 TEST_CASE("escape characters are kept if not before a comment prefix", "IniFile")
@@ -568,98 +568,7 @@ TEST_CASE("escape characters are kept if not before a comment prefix", "IniFile"
                           "bar=Hello \\world!");
     ini::IniFile inif(ss);
 
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello \\world!");
-}
-
-TEST_CASE("multi-line values are read correctly with space indents", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "bar=Hello\n"
-                          "    world!");
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello\nworld!");
-}
-
-TEST_CASE("multi-line values are read correctly with tab indents", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "bar=Hello\n"
-                          "\tworld!");
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello\nworld!");
-}
-
-TEST_CASE("multi-line values discard end-of-line comments", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "bar=Hello ; everyone\n"
-                          "    world! ; comment");
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello\nworld!");
-}
-
-TEST_CASE("multi-line values discard interspersed comment lines", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "bar=Hello\n"
-                          "; everyone\n"
-                          "    world!");
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello\nworld!");
-}
-
-TEST_CASE("multi-line values should not be parsed when disabled", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "    bar=Hello\n"
-                          "    baz=world!");
-    ini::IniFile inif;
-    inif.setMultiLineValues(false);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello");
-	REQUIRE(inif["Foo"]["baz"].as<std::string>() == "world!");
-}
-
-TEST_CASE("multi-line values should be parsed when enabled, even when the continuation contains =", "IniFile")
-{
-    std::istringstream ss("[Foo]\n"
-                          "    bar=Hello\n"
-                          "    baz=world!");
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    inif.decode(ss);
-
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "Hello\nbaz=world!");
-	REQUIRE(inif["Foo"]["baz"].as<std::string>() == "");
-}
-
-TEST_CASE("when multi-line values are enabled, write newlines as multi-line value continuations", "IniFile")
-{
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-
-    inif["Foo"] = ini::IniSection();
-    inif["Foo"]["bar"] = "Hello\nworld!";
-
-    std::string str = inif.encode();
-
-    REQUIRE(str ==
-            "[Foo]\n"
-            "bar=Hello\n"
-            "\tworld!\n");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "Hello \\world!");
 }
 
 TEST_CASE("stringInsensitiveLess operator() returns true if and only if first parameter is less than the second ignoring sensitivity", "StringInsensitiveLessFunctor")
@@ -716,7 +625,7 @@ TEST_CASE(".as<>() works with IniFileCaseInsensitive", "IniFile")
     std::istringstream ss("[FOO]\nbar=bla");
     ini::IniFileCaseInsensitive inif(ss);
 
-    REQUIRE(inif["FOO"]["bar"].as<std::string>() == "bla");
+    REQUIRE(inif["FOO"]["bar"].as<std::string>("") == "bla");
 }
 
 TEST_CASE("trim() works with empty strings", "TrimFunction")
@@ -777,34 +686,6 @@ TEST_CASE("fail to load field without equal", "IniFile")
     REQUIRE_THROWS(inif.decode("[Foo]\nbar"));
 }
 
-TEST_CASE("fail to parse a multi-line field without indentation (when enabled)", "IniFile")
-{
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    REQUIRE_THROWS(inif.decode("[Foo]\nbar=Hello\nworld!"));
-}
-
-TEST_CASE("fail to parse a multi-line field without indentation (when disabled)", "IniFile")
-{
-    ini::IniFile inif;
-    inif.setMultiLineValues(false);
-    REQUIRE_THROWS(inif.decode("[Foo]\nbar=Hello\nworld!"));
-}
-
-TEST_CASE("fail to continue multi-line field without start (when enabled)", "IniFile")
-{
-    ini::IniFile inif;
-    inif.setMultiLineValues(true);
-    REQUIRE_THROWS(inif.decode("[Foo]\n    world!\nbar=Hello"));
-}
-
-TEST_CASE("fail to continue multi-line field without start (when disabled)", "IniFile")
-{
-    ini::IniFile inif;
-    inif.setMultiLineValues(false);
-    REQUIRE_THROWS(inif.decode("[Foo]\n    world!\nbar=Hello"));
-}
-
 TEST_CASE("fail to parse as bool", "IniFile")
 {
     std::istringstream ss("[Foo]\nbar=bla");
@@ -812,7 +693,7 @@ TEST_CASE("fail to parse as bool", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE_THROWS(inif["Foo"]["bar"].as<bool>());
+    REQUIRE(inif["Foo"]["bar"].as<bool>(true) == true);
 }
 
 TEST_CASE("fail to parse as int", "IniFile")
@@ -822,7 +703,7 @@ TEST_CASE("fail to parse as int", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE_THROWS(inif["Foo"]["bar"].as<int>());
+    REQUIRE(inif["Foo"]["bar"].as<int>(3000) == 3000);
 }
 
 TEST_CASE("fail to parse as double", "IniFile")
@@ -832,7 +713,7 @@ TEST_CASE("fail to parse as double", "IniFile")
 
     REQUIRE(inif.size() == 1);
     REQUIRE(inif["Foo"].size() == 1);
-    REQUIRE_THROWS(inif["Foo"]["bar"].as<double>());
+    REQUIRE_THROWS(inif["Foo"]["bar"].as<double>(3.0));
 }
 
 TEST_CASE("fail to parse field without section", "IniFile")
@@ -847,7 +728,7 @@ TEST_CASE("spaces are not taken into account in field names", "IniFile")
     ini::IniFile inif(ss);
 
     REQUIRE(inif["Foo"].find("bar") != inif["Foo"].end());
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "hello world");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "hello world");
 }
 
 TEST_CASE("spaces are not taken into account in field values", "IniFile")
@@ -855,7 +736,7 @@ TEST_CASE("spaces are not taken into account in field values", "IniFile")
     std::istringstream ss(("[Foo]\nbar=  \t  hello world  \t  "));
     ini::IniFile inif(ss);
 
-    REQUIRE(inif["Foo"]["bar"].as<std::string>() == "hello world");
+    REQUIRE(inif["Foo"]["bar"].as<std::string>("") == "hello world");
 }
 
 TEST_CASE("spaces are not taken into account in sections", "IniFile")

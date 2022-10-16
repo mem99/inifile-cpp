@@ -13,9 +13,9 @@
 #include <fstream>
 #include <istream>
 #include <map>
-#include <assert.h>
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <vector>
 
 namespace ini
@@ -28,12 +28,6 @@ namespace ini
     constexpr const char *whitespaces()
     {
         return " \t\n\r\f\v";
-    }
-
-    /** Returns a string of indentation characters. */
-    constexpr const char *indents()
-    {
-        return " \t";
     }
 
     /** Trims a string in place.
@@ -53,6 +47,19 @@ namespace ini
 
         str.erase(lastpos + 1);
         str.erase(0, str.find_first_not_of(whitespaces()));
+    }
+
+    /** Trims a string and returns the result as copy.
+      * @param str string to be trimmed
+      * @return trimmed string */
+    inline std::string trimCopy(const std::string &str)
+    {
+        auto firstpos = str.find_first_not_of(whitespaces());
+        if(firstpos == std::string::npos)
+            return "";
+
+        auto lastpos = str.find_last_not_of(whitespaces());
+        return str.substr(firstpos, lastpos);
     }
 
     /************************************************
@@ -104,19 +111,16 @@ namespace ini
     template<>
     struct Convert<bool>
     {
-        void decode(const std::string &value, bool &result)
+        void decode(const std::string &value, bool &result, bool default_value)
         {
-            std::string str(value);
-            std::transform(str.begin(), str.end(), str.begin(), [](const char c){
-                return static_cast<char>(::toupper(c));
-            });
-
-            if(str == "TRUE")
+            if (value.empty())
+                result = default_value;
+            else if (::toupper(value[0]) == 'T')
                 result = true;
-            else if(str == "FALSE")
+            else if (::toupper(value[0]) == 'F')
                 result = false;
             else
-                throw std::invalid_argument("field is not a bool");
+                result = default_value;
         }
 
         void encode(const bool value, std::string &result)
@@ -128,10 +132,9 @@ namespace ini
     template<>
     struct Convert<char>
     {
-        void decode(const std::string &value, char &result)
+        void decode(const std::string &value, char &result, char default_value)
         {
-            assert(value.size() > 0);
-            result = value[0];
+            result = value.empty() ? default_value : value[0];
         }
 
         void encode(const char value, std::string &result)
@@ -143,13 +146,12 @@ namespace ini
     template<>
     struct Convert<unsigned char>
     {
-        void decode(const std::string &value, unsigned char &result)
+        void decode(const std::string &value, unsigned char &result, unsigned char default_value)
         {
-            assert(value.size() > 0);
-            result = value[0];
+            result = value.empty() ? default_value : value[0];
         }
 
-        void encode(const unsigned char value, std::string &result)
+        void encode(const char value, std::string &result)
         {
             result = value;
         }
@@ -158,12 +160,13 @@ namespace ini
     template<>
     struct Convert<short>
     {
-        void decode(const std::string &value, short &result)
+        void decode(const std::string &value, short &result, short default_value)
         {
             long tmp;
-            if(!strToLong(value, tmp))
-                throw std::invalid_argument("field is not a short");
-            result = static_cast<short>(tmp);
+            if (value.empty() || !strToLong(value, tmp))
+                result = default_value;
+            else
+                result = static_cast<short>(tmp);
         }
 
         void encode(const short value, std::string &result)
@@ -177,12 +180,13 @@ namespace ini
     template<>
     struct Convert<unsigned short>
     {
-        void decode(const std::string &value, unsigned short &result)
+        void decode(const std::string &value, unsigned short &result, unsigned short default_value)
         {
-            unsigned long tmp;
-            if(!strToULong(value, tmp))
-                throw std::invalid_argument("field is not an unsigned short");
-            result = static_cast<unsigned short>(tmp);
+            long tmp;
+            if (value.empty() || !strToLong(value, tmp))
+                result = default_value;
+            else
+                result = static_cast<unsigned short>(tmp);
         }
 
         void encode(const unsigned short value, std::string &result)
@@ -196,12 +200,13 @@ namespace ini
     template<>
     struct Convert<int>
     {
-        void decode(const std::string &value, int &result)
+        void decode(const std::string &value, int &result, int default_value)
         {
             long tmp;
-            if(!strToLong(value, tmp))
-                throw std::invalid_argument("field is not an int");
-            result = static_cast<int>(tmp);
+            if (value.empty() || !strToLong(value, tmp))
+                result = default_value;
+            else
+                result = static_cast<int>(tmp);
         }
 
         void encode(const int value, std::string &result)
@@ -215,12 +220,13 @@ namespace ini
     template<>
     struct Convert<unsigned int>
     {
-        void decode(const std::string &value, unsigned int &result)
+        void decode(const std::string &value, unsigned int &result, unsigned int default_value)
         {
-            unsigned long tmp;
-            if(!strToULong(value, tmp))
-                throw std::invalid_argument("field is not an unsigned int");
-            result = static_cast<unsigned int>(tmp);
+            long tmp;
+            if (value.empty() || !strToLong(value, tmp))
+                result = default_value;
+            else
+                result = static_cast<unsigned int>(tmp);
         }
 
         void encode(const unsigned int value, std::string &result)
@@ -234,10 +240,10 @@ namespace ini
     template<>
     struct Convert<long>
     {
-        void decode(const std::string &value, long &result)
+        void decode(const std::string &value, long &result, long default_value)
         {
-            if(!strToLong(value, result))
-                throw std::invalid_argument("field is not a long");
+            if(value.empty() || !strToLong(value, result))
+                result = default_value;
         }
 
         void encode(const long value, std::string &result)
@@ -251,10 +257,10 @@ namespace ini
     template<>
     struct Convert<unsigned long>
     {
-        void decode(const std::string &value, unsigned long &result)
+        void decode(const std::string &value, unsigned long &result, unsigned long default_value)
         {
-            if(!strToULong(value, result))
-                throw std::invalid_argument("field is not an unsigned long");
+            if(value.empty() || !strToULong(value, result))
+                result = default_value;
         }
 
         void encode(const unsigned long value, std::string &result)
@@ -268,9 +274,9 @@ namespace ini
     template<>
     struct Convert<double>
     {
-        void decode(const std::string &value, double &result)
+        void decode(const std::string &value, double &result, double default_value)
         {
-            result = std::stod(value);
+            result = value.empty() ? default_value : std::stod(value);
         }
 
         void encode(const double value, std::string &result)
@@ -284,9 +290,9 @@ namespace ini
     template<>
     struct Convert<float>
     {
-        void decode(const std::string &value, float &result)
+        void decode(const std::string &value, float &result, float default_value)
         {
-            result = std::stof(value);
+            result = value.empty() ? default_value : std::stof(value);
         }
 
         void encode(const float value, std::string &result)
@@ -300,9 +306,9 @@ namespace ini
     template<>
     struct Convert<std::string>
     {
-        void decode(const std::string &value, std::string &result)
+        void decode(const std::string &value, std::string &result, const std::string &default_value)
         {
-            result = value;
+            result = value.empty() ? default_value : value;
         }
 
         void encode(const std::string &value, std::string &result)
@@ -314,14 +320,14 @@ namespace ini
     template<>
     struct Convert<const char*>
     {
+        void decode(const std::string &value, const char* &result, const char * const &default_value)
+        {
+            result = value.empty() ? default_value : value.c_str();
+        }
+
         void encode(const char* const &value, std::string &result)
         {
             result = value;
-        }
-
-        void decode(const std::string &value, const char* &result)
-        {
-            result = value.c_str();
         }
     };
 
@@ -361,11 +367,11 @@ namespace ini
         {}
 
         template<typename T>
-        T as() const
+        T as(const T &default_value) const
         {
             Convert<T> conv;
             T result;
-            conv.decode(value_, result);
+            conv.decode(value_, result, default_value);
             return result;
         }
 
@@ -418,7 +424,6 @@ namespace ini
         char fieldSep_ = '=';
         char esc_ = '\\';
         std::vector<std::string> commentPrefixes_ = { "#" , ";" };
-        bool multiLineValues_ = false;
 
         void eraseComment(const std::string &commentPrefix,
             std::string &str,
@@ -483,17 +488,15 @@ namespace ini
                 auto prefixpos = findCommentPrefix(str, i);
                 // if no suitable prefix was found at this position
                 // then simply write the current character
-                if(prefixpos != commentPrefixes_.end())
+                if(prefixpos == commentPrefixes_.end())
+                    os.put(str[i]);
+                else
                 {
                     const std::string &prefix = *prefixpos;
                     os.put(esc_);
                     os.write(prefix.c_str(), prefix.size());
                     i += prefix.size() - 1;
                 }
-                else if (multiLineValues_ && str[i] == '\n')
-                    os.write("\n\t", 2);
-                else
-                    os.put(str[i]);
             }
         }
 
@@ -573,14 +576,6 @@ namespace ini
             esc_ = esc;
         }
 
-        /** Sets whether or not to parse multi-line field values.
-          * Default is false.
-          * @param enable enable or disable? */
-        void setMultiLineValues(bool enable)
-        {
-            multiLineValues_ = enable;
-        }
-
         /** Tries to decode a ini file from the given input stream.
           * @param is input stream from which data should be read. */
         void decode(std::istream &is)
@@ -588,14 +583,12 @@ namespace ini
             this->clear();
             int lineNo = 0;
             IniSectionBase<Comparator> *currentSection = nullptr;
-            std::string mutliLineValueFieldName = "";
             std::string line;
             // iterate file line by line
             while(!is.eof() && !is.fail())
             {
                 std::getline(is, line, '\n');
                 eraseComments(line);
-                bool hasIndent = line.find_first_not_of(indents()) != 0;
                 trim(line);
                 ++lineNo;
 
@@ -627,10 +620,6 @@ namespace ini
                     // retrieve section name
                     std::string secName = line.substr(1, pos - 1);
                     currentSection = &((*this)[secName]);
-
-                    // clear multiline value field name
-                    // a new section means there is no value to continue
-                    mutliLineValueFieldName = "";
                 }
                 else
                 {
@@ -646,35 +635,21 @@ namespace ini
 
                     // find key value separator
                     std::size_t pos = line.find(fieldSep_);
-                    if (multiLineValues_ && hasIndent && mutliLineValueFieldName != "")
-                    {
-                        // extend a multi-line value
-                        IniField previous_value = (*currentSection)[mutliLineValueFieldName];
-                        std::string value = previous_value.as<std::string>() + "\n" + line;
-                        (*currentSection)[mutliLineValueFieldName] = value;
-                    }
-                    else if(pos == std::string::npos)
+                    if(pos == std::string::npos)
                     {
                         std::stringstream ss;
                         ss << "l." << lineNo
                            << ": ini parsing failed, no '"
                            << fieldSep_
                            << "' found";
-                        if (multiLineValues_)
-                            ss << ", and not a multi-line value continuation";
                         throw std::logic_error(ss.str());
                     }
-                    else
-                    {
-                        // retrieve field name and value
-                        std::string name = line.substr(0, pos);
-                        trim(name);
-                        std::string value = line.substr(pos + 1, std::string::npos);
-                        trim(value);
-                        (*currentSection)[name] = value;
-                        // store last field name for potential multi-line values
-                        mutliLineValueFieldName = name;
-                    }
+                    // retrieve field name and value
+                    std::string name = line.substr(0, pos);
+                    trim(name);
+                    std::string value = line.substr(pos + 1, std::string::npos);
+                    trim(value);
+                    (*currentSection)[name] = value;
                 }
             }
         }
@@ -712,7 +687,7 @@ namespace ini
                 {
                     writeEscaped(os, secPair.first);
                     os.put(fieldSep_);
-                    writeEscaped(os, secPair.second.template as<std::string>());
+                    writeEscaped(os, secPair.second.template as<std::string>(""));
                     os.put('\n');
                 }
             }
